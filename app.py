@@ -40,27 +40,44 @@ IMAGE_SIZE = 1024
 
 # Footer Settings
 FOOTER_TEXT = "Tel: +91 8299396255  |  Email: ANDROCODERS21@GMAIL.COM  |  ANDROCODERS.IN"
-FOOTER_ELEVATION = 50  # pixels from bottom
+FOOTER_ELEVATION = 40
 FOOTER_FONT_SIZE = 24
 FOOTER_TEXT_COLOR = (255, 255, 255)  # White text
 
 # Prompt Templates - Following Gemini best practices: describe the scene narratively
-STRUCTURED_OUTPUT_PROMPT = """
-You are a creative social media content designer. Based on the holiday "{holiday}", generate:
+STRUCTURED_OUTPUT_PROMPT = """You are a creative social media content designer. For the holiday "{holiday}", produce a JSON object with exactly two keys: "prompt" and "caption".
 
-1. A detailed, narrative image generation prompt (not a keyword list, but a descriptive paragraph) for creating a 1024x1024 social media post image. The prompt should describe:
-   - A modern, premium design with elegant calligraphy-style greeting text for {holiday} positioned on the LEFT side of the composition
-   - A beautifully rendered, high-detail symbolic illustration representing {holiday} on the RIGHT side, with soft glowing effects and a photorealistic premium aesthetic
-   - The overall scene should have a sleek, professional look with modern vibrant colors and celebratory atmosphere
-   - Use photography-like quality with soft, ambient lighting that creates a warm, inviting mood
-   -Edge to Edge design no borders
+IMPORTANT:
+- "prompt" must be a single, flowing, narrative image-generation paragraph suitable for a text-to-image model.
+- Do NOT include instructions, bullet points, or meta language inside the "prompt" value.
+- Output valid JSON only.
 
-2. A catchy, engaging caption for posting on social media (include relevant emojis)
+What the image-generation prompt must describe:
 
-Respond in valid JSON format with exactly these keys:
+Overall scene:
+A square 1:1, edge-to-edge premium social media visual with a realistic, studio-quality look. The scene should feel like a carefully styled photographic setup blended with high-end illustration realism, not a flat poster or abstract background.
+
+Composition:
+A balanced left–right layout designed for a square crop. Elegant English calligraphic greeting text appears on the LEFT, while a cohesive symbolic vignette appears on the RIGHT. Both sides exist within the same continuous environment and visual plane, with no floating cards, no raised panels, and no framed sections.
+
+LEFT — greeting:
+A refined English calligraphy greeting such as “Happy {holiday},” rendered in a sophisticated script. The lettering has a flat metallic or gold-foil appearance with natural light reflections and soft highlights, integrated directly into the scene rather than embossed or extruded. It should feel elegant, premium, and readable at feed scale.
+
+RIGHT — symbolic :
+A harmonious grouping of multiple symbolic elements (two to four) representing {holiday}, arranged as a small still-life scene rather than a single isolated object. The elements interact naturally through shared lighting and subtle contact shadows, The arrangement feels grounded and intentional, not floating or staged.
+
+Background & environment:
+Background should be rich with desing and paters and colors 
+
+Depth, focus & lighting:
+Use deep depth of field so both typography and symbolic elements remain sharp and detailed. Lighting should be soft and diffused with realistic shadows and mild rim-lighting where appropriate. Avoid shallow focus, heavy bokeh, spotlight halos, or blurred backdrops that separate elements from the environment.
+
+Style :
+Premium, cinematic, and brand-ready. Photography-like fine material , balanced contrast, and a warm, inviting mood. Avoid logos, watermarks, footer text, UI elements, white margins, flat poster gradients, or card-like compositions.
+
 {{
-    "prompt": "your detailed narrative image prompt here",
-    "caption": "your social media caption here"
+  "prompt": "<single-paragraph image-generation prompt for an image model (describing the square, left-right scene for {holiday})>",
+  "caption": "<short social caption with emojis>"
 }}
 """
 
@@ -129,7 +146,9 @@ def generate_structured_output(holiday: str) -> dict:
 
     try:
         result = json.loads(response.text)
+        print(json.dumps(result, indent=4))
         return result
+
     except json.JSONDecodeError:
         raise HTTPException(
             status_code=500, detail="Failed to parse Gemini response as JSON"
@@ -139,17 +158,9 @@ def generate_structured_output(holiday: str) -> dict:
 def generate_image(prompt: str) -> Image.Image:
     """Generate an image using Gemini Nano Banana Pro."""
 
-    full_prompt = f"""
-Create a stunning 1024x1024 social media post image with the following scene:
-
-{prompt}
-
-The composition should feel premium and professionally designed, with careful attention to lighting, color harmony, and visual balance. The overall mood should be celebratory and inviting.
-"""
-
     response = client.models.generate_content(
         model=GEMINI_IMAGE_MODEL,
-        contents=[full_prompt],
+        contents=[prompt],
         config=types.GenerateContentConfig(
             response_modalities=["IMAGE", "TEXT"],
             image_config=types.ImageConfig(
@@ -174,12 +185,6 @@ def overlay_images(generated_image: Image.Image) -> Image.Image:
     if generated_image.mode != "RGBA":
         generated_image = generated_image.convert("RGBA")
 
-    # Resize generated image to 1024x1024 if needed
-    if generated_image.size != (IMAGE_SIZE, IMAGE_SIZE):
-        generated_image = generated_image.resize(
-            (IMAGE_SIZE, IMAGE_SIZE), Image.Resampling.LANCZOS
-        )
-
     # Create a copy to work with
     final_image = generated_image.copy()
 
@@ -191,23 +196,24 @@ def overlay_images(generated_image: Image.Image) -> Image.Image:
 
     # Layer 3: Paste the logo on top-left with padding
     logo = Image.open(LOGO_IMAGE_PATH).convert("RGBA")
-    # Resize logo to 200x200
+    # Resize logo to 120x120
     logo = logo.resize((120, 120), Image.Resampling.LANCZOS)
-    # Paste logo at top-left with 30px padding
+    # Paste logo at top-left with 20px padding
     final_image.paste(logo, (20, 20), logo)
 
     # Layer 4: Add footer text
     draw = ImageDraw.Draw(final_image)
-    try:
-        # Use Segoe UI on Windows for better compatibility
-        font = ImageFont.truetype("segoeui.ttf", FOOTER_FONT_SIZE)
-    except (IOError, OSError):
-        try:
-            font = ImageFont.truetype("arial.ttf", FOOTER_FONT_SIZE)
-        except (IOError, OSError):
-            font = ImageFont.load_default()
     
-    # Calculate text position (centered horizontally, 40px from bottom)
+    # Use specific Google Sans font only
+    font_path = "GoogleSans_17pt-SemiBold.ttf"
+    
+    try:
+        font = ImageFont.truetype(font_path, FOOTER_FONT_SIZE)
+    except (IOError, OSError):
+        print(f"Warning: Could not load {font_path}, falling back to default (size will be small)")
+        font = ImageFont.load_default()
+    
+    # Calculate text position (centered horizontally)
     text_bbox = draw.textbbox((0, 0), FOOTER_TEXT, font=font)
     text_width = text_bbox[2] - text_bbox[0]
     text_height = text_bbox[3] - text_bbox[1]
@@ -358,4 +364,5 @@ async def add_subscriber(
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+    import uvicorn
+    uvicorn.run("app:app", host="0.0.0.0", port=8001, reload=True)
