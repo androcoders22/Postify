@@ -29,7 +29,7 @@ LOGO_IMAGE_PATH = "logo.png"
 
 # API Endpoints
 SEND_MEDIA_URL = "https://fast.meteor-fitness.com/send-media?type=base64"
-PHONE_NUMBER = "9450214263"
+PHONE_NUMBER = "8299396255"
 
 # Gemini Models
 GEMINI_TEXT_MODEL = "gemini-flash-latest"
@@ -63,11 +63,11 @@ A balanced left–right layout designed for a square crop. Elegant English calli
 LEFT — greeting:
 A refined English calligraphy greeting such as “Happy {holiday},” rendered in a sophisticated script. The lettering has a flat metallic or gold-foil appearance with natural light reflections and soft highlights, integrated directly into the scene rather than embossed or extruded. It should feel elegant, premium, and readable at feed scale.
 
-RIGHT — symbolic :
-A harmonious grouping of multiple symbolic elements (two to four) representing {holiday}, arranged as a small still-life scene rather than a single isolated object. The elements interact naturally through shared lighting and subtle contact shadows, The arrangement feels grounded and intentional, not floating or staged.
+RIGHT — Illustration :
+A harmonious grouping of multiple elements (two to four) representing {holiday}, arranged as a small still-life scene rather than a single isolated object. The elements interact naturally subtly, The arrangement feels grounded and intentional, not floating or staged, (Eg: ramadan: crecent moon and lantern,  christmas: tree and snowman...etc)
 
 Background & environment:
-Background should be rich with desing and paters and colors 
+Background should be rich with desing and patterns and colors (40%) opacity 
 
 Depth, focus & lighting:
 Use deep depth of field so both typography and symbolic elements remain sharp and detailed. Lighting should be soft and diffused with realistic shadows and mild rim-lighting where appropriate. Avoid shallow focus, heavy bokeh, spotlight halos, or blurred backdrops that separate elements from the environment.
