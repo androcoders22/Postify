@@ -2,20 +2,14 @@ name: Hourly Post Generator
 
 on:
   schedule:
-    - cron: '0 * * * *'  # Runs at the start of every hour
+    - cron: '35 18 * * *'  # Runs daily at 00:05 IST (18:35 UTC)
   workflow_dispatch:      # Allows manual triggering for testing
 
 jobs:
   generate-post:
     runs-on: ubuntu-latest
     steps:
-      - name: Random Wait
+      - name: Call Distribute Holiday Post API
         run: |
-          WAIT_TIME=$(( ( RANDOM % 600 ) + 1 ))
-          echo "Waiting for $WAIT_TIME seconds..."
-          sleep $WAIT_TIME
-
-      - name: Call Generate Post API
-        run: |
-          curl -X POST https://andro-postify.leapcell.app/generate-post \
+          curl -X POST https://andro-postify.leapcell.app/distribute-holiday-post \
                -H "Content-Type: application/json"
