@@ -1,4 +1,4 @@
-name: Hourly Post Generator
+name: Daily Post Generator
 
 on:
   schedule:
