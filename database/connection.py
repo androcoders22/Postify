@@ -44,3 +44,23 @@ def serialize_doc(doc):
     if "logo" in doc and isinstance(doc["logo"], bytes):
         doc["logo"] = base64.b64encode(doc["logo"]).decode("utf-8")
     return doc
+
+
+_subscribers_collection = None
+
+
+def get_subscribers_collection():
+    """Get the subscribers collection."""
+    global _subscribers_collection
+    if _subscribers_collection is None:
+        _subscribers_collection = get_database().get_collection("subscribers")
+    return _subscribers_collection
+
+
+def serialize_subscriber_doc(doc):
+    """Convert MongoDB subscriber document to JSON-serializable dict."""
+    if not doc:
+        return None
+    doc["id"] = str(doc["_id"])
+    del doc["_id"]
+    return doc

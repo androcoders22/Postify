@@ -42,35 +42,42 @@ FOOTER_TEXT_COLOR = (255, 255, 255)  # White text
 STRUCTURED_OUTPUT_PROMPT = """You are a creative social media content designer. For the holiday "{holiday}", produce a JSON object with exactly two keys: "prompt" and "caption".
 
 IMPORTANT:
-- "prompt" must be a single, flowing, narrative image-generation paragraph suitable for a text-to-image model.
-- Do NOT include instructions, bullet points, or meta language inside the "prompt" value.
-- Output valid JSON only.
+
+"prompt" must be a single, flowing, narrative image-generation paragraph suitable for a text-to-image model.
+
+Do NOT include instructions, bullet points, or meta language inside the "prompt" value.
+
+Output valid JSON only.
 
 What the image-generation prompt must describe:
 
 Overall scene:
-A square 1:1, edge-to-edge premium social media visual with a realistic, studio-quality look. The scene should feel like a carefully styled photographic setup blended with high-end illustration realism, not a flat poster or abstract background.
+edge-to-edge premium social media visual with a graphic-design / flat-illustration aesthetic (welcoming, festive slightly glowing ), not photorealistic. Aim for smooth shapes, subtle gradients, clean outlines, tasteful texture hints, and a printed/graphic feel rather than photographic materials.
 
 Composition:
-A balanced left–right layout designed for a square crop. Elegant English calligraphic greeting text appears on the LEFT, while a cohesive symbolic vignette appears on the RIGHT. Both sides exist within the same continuous environment and visual plane, with no floating cards, no raised panels, and no framed sections.
+A balanced left–right layout designed for a square crop. Elegant English calligraphic greeting text appears on the LEFT, while a cohesive symbolic illustration appears on the RIGHT. Both sides must live in the same continuous visual, (do not frame the main composition like a framed poster).
 
 LEFT — greeting:
-A refined English calligraphy greeting such as "Happy {holiday}," rendered in a sophisticated script. The lettering has a flat metallic or gold-foil appearance with natural light reflections and soft highlights, integrated directly into the scene rather than embossed or extruded. It should feel elegant, premium, and readable at feed scale.
+A refined English calligraphy greeting for {holiday}, set in a sophisticated script. The lettering has a flat metallic or gold-foil appearance with subtle, graphic highlights and minimal surface texture — integrated directly into the scene (flat and printed look, not embossed, extruded, or photographic). It must read clearly at feed scale and feel premium and elegant.
 
-RIGHT — Illustration :
-A harmonious grouping of multiple elements (two to four) representing {holiday}, arranged as a small still-life scene rather than a single isolated object. The elements interact naturally subtly, The arrangement feels grounded and intentional, not floating or staged, (Eg: ramadan: crecent moon and lantern,  christmas: tree and snowman...etc)
+RIGHT — Illustration:
+A harmonious grounded still-life made of two to four cohesive, symbolic elements representing {holiday} (arranged on a subtle tabletop or ground plane so they sit naturally together). Elements must be graphic/illustrated (stylized bow & arrow, diya and marigolds, crescent and lantern, tree and ornaments, etc., depending on the holiday) with clean shapes, clear silhouettes, and crisp graphic shadows. Ensure elements interact subtly and feel intentionally arranged — not floating or isolated.
 
 Background & environment:
-Background should be rich with desing and patterns and colors (40%) opacity 
+A rich background with ornamental patterning or decorative motifs blended at roughly 40% opacity so it unifies the composition without overpowering it. Background treatments should read as printed/graphic texture (subtle pattern), not photographic.
 
 Depth, focus & lighting:
-Use deep depth of field so both typography and symbolic elements remain sharp and detailed. Lighting should be soft and diffused with realistic shadows and mild rim-lighting where appropriate. Avoid shallow focus, heavy bokeh, spotlight halos, or blurred backdrops that separate elements from the environment.
+Keep full graphic clarity across the scene: use deep apparent depth while maintaining sharpness and detail on both typography and symbolic elements. Lighting should be soft, diffused, stylized—using crisp, vector-friendly shadows and gentle rim highlights to define edges. Avoid photographic bokeh.
 
-Style :
-Premium, cinematic, and brand-ready. Photography-like fine material , balanced contrast, and a warm, inviting mood. Avoid logos, watermarks, footer text, UI elements, white margins, flat poster gradients, or card-like compositions.
+Style:
+Premium, sleek, and brand-ready. Fine materials suggested through graphic cues, Balanced contrast, warm inviting mood, and overall visual cohesion. Strictly avoid logos, watermarks, footer/contact text, UI elements, white margins, stamped footers, or any visible branding, Do not produce framed panels, inset cards, or any composition that isolates left and right as separate framed tiles.
 
+Output JSON schema:
+Produce only valid JSON with exactly two keys: "prompt" and "caption". The "prompt" value must be a single paragraph describing the full square left-right graphic illustration scene (as above) and must not contain meta instructions or bullet lists. The "caption" value should be a short social caption (one or two sentences) that may include emojis.
+
+Example structure (must match this format exactly):
 {{
-  "prompt": "<single-paragraph image-generation prompt for an image model (describing the square, left-right scene for {holiday})>",
-  "caption": "<short social caption with emojis>"
+"prompt": "<single-paragraph image-generation prompt for a non-photoreal, graphic-designed left-right square scene for {holiday}>",
+"caption": "<short social caption with emojis>"
 }}
 """

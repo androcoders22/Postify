@@ -3,11 +3,12 @@ CSV Service - Holiday CSV parsing.
 """
 import csv
 from datetime import datetime
+from typing import Optional
 from fastapi import HTTPException
 from config import CSV_FILE_PATH
 
 
-def parse_csv_for_today() -> str | None:
+def parse_csv_for_today() -> Optional[str]:
     """Parse the CSV file and return today's holiday if found."""
     today = datetime.now().strftime("%d-%m-%Y")
 

@@ -19,4 +19,15 @@ async def send_to_whatsapp(
 
     async with httpx.AsyncClient() as http_client:
         response = await http_client.post(SEND_MEDIA_URL, json=payload, timeout=60.0)
-        return response.json()
+        
+        # Handle non-JSON responses gracefully
+        try:
+            return response.json()
+        except Exception:
+            # API returned non-JSON (empty or text), but request may have succeeded
+            return {
+                "status": "sent",
+                "status_code": response.status_code,
+                "raw_response": response.text[:200] if response.text else "empty"
+            }
+

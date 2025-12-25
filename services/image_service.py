@@ -86,6 +86,31 @@ def overlay_images(
     return final_image
 
 
+def overlay_subscriber_image(
+    generated_image: Image.Image,
+    overlay_data: bytes,
+) -> Image.Image:
+    """Overlay a subscriber's custom overlay on top of the generated image."""
+    # Ensure the generated image is in RGBA mode
+    if generated_image.mode != "RGBA":
+        generated_image = generated_image.convert("RGBA")
+
+    # Create a copy to work with
+    final_image = generated_image.copy()
+
+    # Load and overlay the subscriber's custom overlay
+    try:
+        overlay = Image.open(io.BytesIO(overlay_data)).convert("RGBA")
+        # Resize overlay to match the image size if needed
+        if overlay.size != final_image.size:
+            overlay = overlay.resize(final_image.size, Image.Resampling.LANCZOS)
+        final_image = Image.alpha_composite(final_image, overlay)
+    except Exception as e:
+        print(f"Warning: Could not apply subscriber overlay: {e}")
+
+    return final_image
+
+
 def image_to_base64(image: Image.Image) -> str:
     """Convert PIL Image to base64 string."""
     # Convert to RGB if needed (for PNG compatibility with alpha)
