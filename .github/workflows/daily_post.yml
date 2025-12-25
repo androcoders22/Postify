@@ -11,5 +11,4 @@ jobs:
     steps:
       - name: Call Distribute Holiday Post API
         run: |
-          curl -X POST https://andro-postify.leapcell.app/distribute-holiday-post \
-               -H "Content-Type: application/json"
+          curl -X POST http://3.15.138.191:8001/subscriber/distribute -H "Content-Type: application/json"
