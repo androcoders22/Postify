@@ -25,7 +25,6 @@ def generate_structured_output(holiday: str) -> dict:
 
     try:
         result = json.loads(response.text)
-        print(json.dumps(result, indent=4))
         return result
     except json.JSONDecodeError:
         raise HTTPException(

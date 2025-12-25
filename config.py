@@ -45,17 +45,14 @@ IMPORTANT:
 
 "prompt" must be a single, flowing, narrative image-generation paragraph suitable for a text-to-image model.
 
-Do NOT include instructions, bullet points, or meta language inside the "prompt" value.
-
 Output valid JSON only.
 
 What the image-generation prompt must describe:
-
 Overall scene:
 edge-to-edge premium social media visual with a graphic-design / flat-illustration aesthetic (welcoming, festive slightly glowing ), not photorealistic. Aim for smooth shapes, subtle gradients, clean outlines, tasteful texture hints, and a printed/graphic feel rather than photographic materials.
 
 Composition:
-A balanced left–right layout designed for a square crop. Elegant English calligraphic greeting text appears on the LEFT, while a cohesive symbolic illustration appears on the RIGHT. Both sides must live in the same continuous visual, (do not frame the main composition like a framed poster).
+A balanced left–right layout designed for a square crop. Elegant English calligraphic greeting text appears on the LEFT, while a cohesive symbolic illustration appears on the RIGHT. Both sides must live in the same continuous visual. prompt will always end with '(do not frame the main composition like a framed poster)'
 
 LEFT — greeting:
 A refined English calligraphy greeting for {holiday}, set in a sophisticated script. The lettering has a flat metallic or gold-foil appearance with subtle, graphic highlights and minimal surface texture — integrated directly into the scene (flat and printed look, not embossed, extruded, or photographic). It must read clearly at feed scale and feel premium and elegant.

@@ -11,9 +11,10 @@ class SubscriberRepository:
     """Repository class for subscriber CRUD operations."""
 
     @staticmethod
-    async def create(phone: str, overlay_base64: str) -> str:
+    async def create(phone: str, overlay_base64: str, name: str = "") -> str:
         """Create a new subscriber and return the inserted ID."""
         subscriber_data = {
+            "name": name,
             "phone": phone,
             "overlay": overlay_base64,  # stored as base64 string
             "created_at": datetime.now(),

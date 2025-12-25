@@ -17,9 +17,15 @@ async def send_to_whatsapp(
         "caption": caption
     }
 
+    print(f"[WhatsApp] Sending to: {phone}")
+    print(f"[WhatsApp] Caption: {caption[:20]}..." if len(caption) > 100 else f"[WhatsApp] Caption: {caption}")
+    print(f"[WhatsApp] Image size: {len(image_base64)} chars")
+    print(f"[WhatsApp] API URL: {SEND_MEDIA_URL}")
+
     async with httpx.AsyncClient() as http_client:
         response = await http_client.post(SEND_MEDIA_URL, json=payload, timeout=60.0)
         
+        print(f"[WhatsApp] Response status: {response.status_code}")
         # Handle non-JSON responses gracefully
         try:
             return response.json()
@@ -30,4 +36,5 @@ async def send_to_whatsapp(
                 "status_code": response.status_code,
                 "raw_response": response.text[:200] if response.text else "empty"
             }
+
 

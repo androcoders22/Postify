@@ -30,8 +30,9 @@ subscriber_distribution_jobs = {}
 async def create_subscriber(
     overlay: UploadFile = File(...),
     phone: str = Form(...),
+    name: str = Form(""),
 ):
-    """Create a new subscriber with overlay image and phone number."""
+    """Create a new subscriber with overlay image, phone number, and name."""
     if not MONGO_URI:
         raise HTTPException(status_code=500, detail="MONGO_URI not configured")
 
@@ -58,6 +59,7 @@ async def create_subscriber(
         subscriber_id = await SubscriberRepository.create(
             phone=phone,
             overlay_base64=overlay_base64,
+            name=name,
         )
 
         return {
@@ -87,12 +89,15 @@ async def get_subscriber(subscriber_id: str):
 async def update_subscriber(
     subscriber_id: str,
     phone: str = Form(None),
+    name: str = Form(None),
     overlay: UploadFile = File(None),
 ):
     """Update subscriber details."""
     update_data = {}
     if phone:
         update_data["phone"] = phone
+    if name:
+        update_data["name"] = name
 
     if overlay:
         try:
@@ -170,55 +175,86 @@ async def _process_subscriber_distribution(job_id: str, subscribers: list, holid
     """Background task to process the subscriber distribution with staggered delays."""
     job = subscriber_distribution_jobs[job_id]
     
+    print(f"\n{'='*60}")
+    print(f"[Job {job_id}] STARTING DISTRIBUTION")
+    print(f"[Job {job_id}] Holiday: {holiday}")
+    print(f"[Job {job_id}] Total subscribers: {len(subscribers)}")
+    print(f"{'='*60}\n")
+    
     try:
         # Generate Base Image (Once) - now happens in background
+        print(f"[Job {job_id}] Generating structured output...")
         structured_output = generate_structured_output(holiday)
         image_prompt = structured_output.get("prompt", "")
         caption = structured_output.get("caption", "")
+        
+        print(f"[Job {job_id}] Caption: {caption}")
+        print(f"[Job {job_id}] Prompt: {image_prompt[:20]}...")
 
         if not image_prompt:
             job["status"] = "failed"
             job["error"] = "Failed to generate image prompt"
+            print(f"[Job {job_id}] ERROR: Failed to generate image prompt")
             return
 
+        print(f"[Job {job_id}] Generating base image...")
         base_image = generate_image(image_prompt)
+        print(f"[Job {job_id}] Base image generated successfully: {base_image.size}")
     except Exception as e:
         job["status"] = "failed"
         job["error"] = f"Image generation failed: {str(e)}"
+        print(f"[Job {job_id}] ERROR: Image generation failed: {str(e)}")
         return
     
     for index, subscriber in enumerate(subscribers):
+        sub_name = subscriber.get("name", "Unknown")
+        sub_phone = subscriber.get("phone", "No phone")
+        sub_id = str(subscriber["_id"])
+        
+        print(f"\n[Job {job_id}] --- Subscriber {index + 1}/{len(subscribers)} ---")
+        print(f"[Job {job_id}] Name: {sub_name}")
+        print(f"[Job {job_id}] Phone: {sub_phone}")
+        print(f"[Job {job_id}] ID: {sub_id}")
+        
         try:
             # Decode overlay from base64
             overlay_base64 = subscriber.get("overlay", "")
             overlay_bytes = base64.b64decode(overlay_base64)
+            print(f"[Job {job_id}] Overlay decoded: {len(overlay_bytes)} bytes")
             
             # Composite the overlay on the generated image
             custom_image = overlay_subscriber_image(base_image, overlay_bytes)
+            print(f"[Job {job_id}] Image composited: {custom_image.size}")
 
             # Convert to base64 for sending
             image_b64 = image_to_base64(custom_image)
 
             # Wait for a random time before sending (except first subscriber)
             if index > 0:
-                delay_seconds = random.randint(30, 300)
-                print(f"[Job {job_id}] Waiting {delay_seconds}s before sending to {subscriber.get('phone')}...")
+                delay_seconds = random.randint(240, 480)  # 4-8 minutes
+                delay_mins = delay_seconds / 60
+                print(f"[Job {job_id}] ⏳ Waiting {delay_mins:.1f} mins ({delay_seconds}s) before sending to {sub_name} ({sub_phone})...")
                 await asyncio.sleep(delay_seconds)
 
-            api_res = await send_to_whatsapp(image_b64, caption, phone=subscriber.get("phone"))
+            api_res = await send_to_whatsapp(image_b64, caption, phone=sub_phone)
+            print(f"[Job {job_id}] WhatsApp API Response: {api_res}")
 
             job["results"].append({
-                "subscriber_id": str(subscriber["_id"]),
-                "phone": subscriber.get("phone"),
+                "subscriber_id": sub_id,
+                "name": sub_name,
+                "phone": sub_phone,
                 "success": True,
                 "api_response": api_res
             })
             job["successful"] += 1
+            print(f"[Job {job_id}] SUCCESS: Message sent to {sub_name} ({sub_phone})")
 
         except Exception as e:
+            print(f"[Job {job_id}] ERROR for {sub_name} ({sub_phone}): {str(e)}")
             job["results"].append({
-                "subscriber_id": str(subscriber["_id"]),
-                "phone": subscriber.get("phone"),
+                "subscriber_id": sub_id,
+                "name": sub_name,
+                "phone": sub_phone,
                 "success": False,
                 "error": str(e)
             })
@@ -228,7 +264,66 @@ async def _process_subscriber_distribution(job_id: str, subscribers: list, holid
     
     job["status"] = "completed"
     job["completed_at"] = datetime.now().isoformat()
-    print(f"[Job {job_id}] Subscriber distribution completed: {job['successful']} successful, {job['failed']} failed")
+    print(f"\n{'='*60}")
+    print(f"[Job {job_id}] DISTRIBUTION COMPLETED")
+    print(f"[Job {job_id}] Successful: {job['successful']}")
+    print(f"[Job {job_id}] Failed: {job['failed']}")
+    print(f"{'='*60}\n")
+
+
+@router.post("/distribute/{subscriber_id}")
+async def distribute_to_single_subscriber(subscriber_id: str, background_tasks: BackgroundTasks):
+    """
+    Generate a holiday post and send it to a specific subscriber by ID.
+    
+    Returns immediately with a job_id. Use /subscriber/distribution-status/{job_id} to check progress.
+    """
+    # 1. Get Today's Holiday
+    holiday = parse_csv_for_today()
+    if not holiday:
+        return {"status": "error", "message": "No holiday found for today"}
+
+    # 2. Get the specific subscriber
+    subscriber = await SubscriberRepository.get_by_id(subscriber_id)
+    if not subscriber:
+        raise HTTPException(status_code=404, detail="Subscriber not found")
+
+    # Convert to raw format for processing (need to get with overlay)
+    from bson import ObjectId
+    from database import get_subscribers_collection
+    raw_subscriber = await get_subscribers_collection().find_one({"_id": ObjectId(subscriber_id)})
+    
+    if not raw_subscriber:
+        raise HTTPException(status_code=404, detail="Subscriber not found")
+
+    # 3. Create a job ID and start background task immediately
+    job_id = str(uuid.uuid4())
+    subscriber_distribution_jobs[job_id] = {
+        "status": "running",
+        "holiday": holiday,
+        "total_subscribers": 1,
+        "processed": 0,
+        "successful": 0,
+        "failed": 0,
+        "started_at": datetime.now().isoformat(),
+        "results": []
+    }
+
+    # Start background task (image generation happens inside)
+    background_tasks.add_task(
+        _process_subscriber_distribution,
+        job_id,
+        [raw_subscriber],
+        holiday
+    )
+
+    return {
+        "status": "started",
+        "job_id": job_id,
+        "holiday": holiday,
+        "subscriber_id": subscriber_id,
+        "message": f"Distribution started for subscriber {subscriber_id}. Check status at /subscriber/distribution-status/{job_id}"
+    }
 
 
 @router.get("/distribution-status/{job_id}")
