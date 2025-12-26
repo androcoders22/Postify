@@ -1,36 +1,31 @@
-Date,Prompt
-25-12-2025,Christmas
-26-12-2025,Boxing Day (Description - Ring boxing and MMA - dont add description in the image)
-27-12-2025,International Day of Epidemic Preparedness
-28-12-2025,Holy Innocents’ Day
-29-12-2025,International Cello Day
-30-12-2025,Bacon Day
-31-12-2025,New Year’s Eve
-01-01-2026,Happy New Year
-03-01-2026,Hazrat Ali’s Birthday
-13-01-2026,Lohri
-14-01-2026,Makar Sankranti
-18-01-2026,Mauni Amavasya
-23-01-2026,Vasant Panchami
-26-01-2026,Republic Day
-01-02-2026,Guru Ravidas Jayanti
-15-02-2026,Maha Shivaratri
-03-03-2026,Holika Dahan
-04-03-2026,Holi
-19-03-2026,Gudi Padwa
-21-03-2026,Eid-ul-Fitr
-26-03-2026,Ram Navami
-31-03-2026,Mahavir Jayanti
-03-04-2026,Good Friday
-06-04-2026,Easter Monday
-14-04-2026,Ambedkar Jayanti
-19-04-2026,Akshaya Tritiya
-01-05-2026,Buddha Purnima
-01-05-2026,Labour Day
-27-05-2026,Eid-al-Adha
-26-06-2026,Muharram
-16-07-2026,Rath Yatra
-15-08-2026,Independence Day
-25-08-2026,Onam
-26-08-2026,Eid Milad-un-Nabi
-28-08-2026,Raksha Bandhan
+Date,Prompt,Description
+26-12-2025,Boxing Day,A public holiday in many Commonwealth nations marked by charitable giving and post-Christmas celebrations.
+27-12-2025,Mirza Ghalib Birth Anniversary,Commemorates the birth of legendary Urdu and Persian poet Mirza Ghalib whose work shaped Indian literature.
+28-12-2025,Dhirubhai Ambani Birth Anniversary,Marks the birth of the founder of Reliance Industries a pioneer of modern Indian entrepreneurship.
+29-12-2025,International Day of Immunization Awareness,A day focused on spreading awareness about the importance of vaccines in disease prevention.
+30-12-2025,T. S. Eliot Birth Anniversary,Observes the birth of Nobel Prize–winning poet and playwright T. S. Eliot.
+31-12-2025,New Year’s Eve,The final day of the year celebrated with gatherings reflections and countdowns worldwide.
+01-01-2026,New Year’s Day,The first day of the year celebrated globally and observed as a holiday in many parts of India.
+02-01-2026,Guru Gobind Singh Jayanti,Celebrates the birth of the tenth Sikh Guru a spiritual leader and warrior saint.
+03-01-2026,Savitribai Phule Jayanti,Honors India’s first female teacher and a major social reformer for women’s education.
+04-01-2026,World Braille Day,Marks the birth of Louis Braille and promotes awareness of Braille for the visually impaired.
+05-01-2026,Shahu Maharaj Death Anniversary,Remembers the contributions of the progressive ruler and social reformer of Kolhapur.
+06-01-2026,Epiphany,A Christian festival commemorating the revelation of Jesus Christ to the Magi.
+07-01-2026,Stephen Hawking Birth Anniversary,Observes the birth of the renowned theoretical physicist and cosmologist.
+08-01-2026,Elvis Presley Birth Anniversary,Marks the birth of the iconic singer known as the King of Rock and Roll.
+09-01-2026,Pravasi Bharatiya Divas,Celebrates the contribution of the Indian diaspora to India’s development.
+10-01-2026,World Hindi Day,Promotes the use and global recognition of the Hindi language.
+11-01-2026,Lal Bahadur Shastri Death Anniversary,Honors India’s second Prime Minister remembered for honesty and leadership.
+12-01-2026,National Youth Day,Observed on Swami Vivekananda’s birth anniversary to inspire youth with his ideals.
+13-01-2026,Lohri,A harvest festival celebrated mainly in North India with bonfires and folk songs.
+14-01-2026,Makar Sankranti / Pongal,A major harvest festival celebrated across India under different regional names.
+15-01-2026,Indian Army Day,Commemorates the establishment of the Indian Army’s command structure.
+16-01-2026,National Startup Day,Recognizes and promotes innovation and entrepreneurship in India.
+17-01-2026,Guru Gobind Singh Death Anniversary,Remembers the sacrifice and legacy of the tenth Sikh Guru.
+18-01-2026,National Immunization Day,Highlights India’s efforts toward complete immunization for children.
+19-01-2026,Netaji Subhas Chandra Bose Remembrance Day,Observed in parts of India to honor the freedom fighter’s legacy.
+20-01-2026,Balasaheb Thackeray Death Anniversary,Marks the remembrance of the founder of Shiv Sena and influential leader.
+21-01-2026,Statehood Day of Tripura Manipur and Meghalaya,Celebrates the formation of these Indian states.
+22-01-2026,M. G. Ramachandran Birth Anniversary,Honors the legendary actor and former Chief Minister of Tamil Nadu.
+23-01-2026,Netaji Subhas Chandra Bose Jayanti,Celebrates the birth of one of India’s most prominent freedom fighters.
+24-01-2026,National Girl Child Day,A day dedicated to raising awareness about the rights and education of the girl child in India.

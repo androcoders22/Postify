@@ -10,7 +10,8 @@ from config import DEFAULT_PHONE_NUMBER
 from models import GeneratePostResponse
 from database import UserRepository
 from services import (
-    parse_csv_for_today,
+    get_holiday_for_today,
+    get_holiday_with_description_for_today,
     generate_structured_output,
     generate_image,
     overlay_images,
@@ -20,7 +21,7 @@ from services import (
 
 router = APIRouter(tags=["Posts"])
 
-# In-memory job tracker 
+# In-memory job tracker
 distribution_jobs = {}
 
 
@@ -36,16 +37,19 @@ async def generate_post(
     Useful for testing specific holidays or branding.
     """
     # Step 1: Resolve Holiday
+    holiday_description = None
     if not holiday:
-        holiday = parse_csv_for_today()
-        if not holiday:
+        holiday_data = await get_holiday_with_description_for_today()
+        if not holiday_data:
             raise HTTPException(
                 status_code=404,
                 detail="No holiday found for today and no holiday parameter provided"
             )
+        holiday = holiday_data.get("prompt")
+        holiday_description = holiday_data.get("description")
 
-    # Step 2: Generate structured output (prompt and caption)
-    structured_output = generate_structured_output(holiday)
+    # Step 2: Generate structured output (prompt and caption) with description
+    structured_output = generate_structured_output(holiday, holiday_description)
     image_prompt = structured_output.get("prompt", "")
     caption = structured_output.get("caption", "")
 
@@ -84,13 +88,16 @@ async def distribute_holiday_post(background_tasks: BackgroundTasks):
     """
     Generate a holiday post once and send customized versions to all users
     with randomized staggered delays to avoid rate-limiting/bans.
-    
+
     Returns immediately with a job_id. Use /distribution-status/{job_id} to check progress.
     """
-    # 1. Get Today's Holiday
-    holiday = parse_csv_for_today()
-    if not holiday:
+    # 1. Get Today's Holiday with description
+    holiday_data = await get_holiday_with_description_for_today()
+    if not holiday_data:
         return {"status": "error", "message": "No holiday found for today"}
+
+    holiday = holiday_data.get("prompt")
+    holiday_description = holiday_data.get("description")
 
     # 2. Get All Users
     users = await UserRepository.get_all_raw()
@@ -98,8 +105,8 @@ async def distribute_holiday_post(background_tasks: BackgroundTasks):
     if not users:
         return {"status": "error", "message": "No users found in database"}
 
-    # 3. Generate Base Image (Once)
-    structured_output = generate_structured_output(holiday)
+    # 3. Generate Base Image (Once) with description for better context
+    structured_output = generate_structured_output(holiday, holiday_description)
     image_prompt = structured_output.get("prompt", "")
     caption = structured_output.get("caption", "")
 
@@ -142,7 +149,7 @@ async def distribute_holiday_post(background_tasks: BackgroundTasks):
 async def _process_distribution(job_id: str, users: list, base_image, caption: str):
     """Background task to process the distribution with staggered delays."""
     job = distribution_jobs[job_id]
-    
+
     for index, user in enumerate(users):
         try:
             # Custom footer: "Phone | Mail | Website"
@@ -182,9 +189,9 @@ async def _process_distribution(job_id: str, users: list, base_image, caption: s
                 "error": str(e)
             })
             job["failed"] += 1
-        
+
         job["processed"] += 1
-    
+
     job["status"] = "completed"
     job["completed_at"] = datetime.now().isoformat()
     print(f"[Job {job_id}] Distribution completed: {job['successful']} successful, {job['failed']} failed")
@@ -197,6 +204,5 @@ async def get_distribution_status(job_id: str):
     """
     if job_id not in distribution_jobs:
         raise HTTPException(status_code=404, detail="Job not found")
-    
-    return distribution_jobs[job_id]
 
+    return distribution_jobs[job_id]

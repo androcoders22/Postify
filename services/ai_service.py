@@ -13,9 +13,20 @@ from config import GEMINI_API_KEY, GEMINI_TEXT_MODEL, GEMINI_IMAGE_MODEL, STRUCT
 client = genai.Client(api_key=GEMINI_API_KEY)
 
 
-def generate_structured_output(holiday: str) -> dict:
-    """Generate structured output with prompt and caption using Gemini Flash."""
-    prompt = STRUCTURED_OUTPUT_PROMPT.format(holiday=holiday)
+def generate_structured_output(holiday: str, description: str = None) -> dict:
+    """Generate structured output with prompt and caption using Gemini Flash.
+
+    Args:
+        holiday: The holiday name/prompt
+        description: Optional detailed description of the holiday for better context
+    """
+    # Build the prompt with description if available
+    if description:
+        holiday_context = f"{holiday}. Context: {description}"
+    else:
+        holiday_context = holiday
+
+    prompt = STRUCTURED_OUTPUT_PROMPT.format(holiday=holiday_context)
 
     response = client.models.generate_content(
         model=GEMINI_TEXT_MODEL,
