@@ -12,7 +12,8 @@ from PIL import Image
 from config import MONGO_URI
 from database import SubscriberRepository
 from services import (
-    parse_csv_for_today,
+    get_holiday_for_today,
+    get_holiday_with_description_for_today,
     generate_structured_output,
     generate_image,
     overlay_subscriber_image,
@@ -127,13 +128,16 @@ async def delete_subscriber(subscriber_id: str):
 async def distribute_to_subscribers(background_tasks: BackgroundTasks):
     """
     Generate a holiday post and send it to all subscribers with their custom overlays.
-    
+
     Returns immediately with a job_id. Use /subscriber/distribution-status/{job_id} to check progress.
     """
-    # 1. Get Today's Holiday
-    holiday = parse_csv_for_today()
-    if not holiday:
+    # 1. Get Today's Holiday with description
+    holiday_data = await get_holiday_with_description_for_today()
+    if not holiday_data:
         return {"status": "error", "message": "No holiday found for today"}
+
+    holiday = holiday_data.get("prompt")
+    holiday_description = holiday_data.get("description")
 
     # 2. Get All Subscribers
     subscribers = await SubscriberRepository.get_all_raw()
@@ -159,7 +163,8 @@ async def distribute_to_subscribers(background_tasks: BackgroundTasks):
         _process_subscriber_distribution,
         job_id,
         subscribers,
-        holiday
+        holiday,
+        holiday_description
     )
 
     return {
@@ -171,23 +176,24 @@ async def distribute_to_subscribers(background_tasks: BackgroundTasks):
     }
 
 
-async def _process_subscriber_distribution(job_id: str, subscribers: list, holiday: str):
+async def _process_subscriber_distribution(job_id: str, subscribers: list, holiday: str, holiday_description: str = None):
     """Background task to process the subscriber distribution with staggered delays."""
     job = subscriber_distribution_jobs[job_id]
-    
+
     print(f"\n{'='*60}")
     print(f"[Job {job_id}] STARTING DISTRIBUTION")
     print(f"[Job {job_id}] Holiday: {holiday}")
+    print(f"[Job {job_id}] Description: {holiday_description}")
     print(f"[Job {job_id}] Total subscribers: {len(subscribers)}")
     print(f"{'='*60}\n")
-    
+
     try:
         # Generate Base Image (Once) - now happens in background
         print(f"[Job {job_id}] Generating structured output...")
-        structured_output = generate_structured_output(holiday)
+        structured_output = generate_structured_output(holiday, holiday_description)
         image_prompt = structured_output.get("prompt", "")
         caption = structured_output.get("caption", "")
-        
+
         print(f"[Job {job_id}] Caption: {caption}")
         print(f"[Job {job_id}] Prompt: {image_prompt[:20]}...")
 
@@ -205,23 +211,23 @@ async def _process_subscriber_distribution(job_id: str, subscribers: list, holid
         job["error"] = f"Image generation failed: {str(e)}"
         print(f"[Job {job_id}] ERROR: Image generation failed: {str(e)}")
         return
-    
+
     for index, subscriber in enumerate(subscribers):
         sub_name = subscriber.get("name", "Unknown")
         sub_phone = subscriber.get("phone", "No phone")
         sub_id = str(subscriber["_id"])
-        
+
         print(f"\n[Job {job_id}] --- Subscriber {index + 1}/{len(subscribers)} ---")
         print(f"[Job {job_id}] Name: {sub_name}")
         print(f"[Job {job_id}] Phone: {sub_phone}")
         print(f"[Job {job_id}] ID: {sub_id}")
-        
+
         try:
             # Decode overlay from base64
             overlay_base64 = subscriber.get("overlay", "")
             overlay_bytes = base64.b64decode(overlay_base64)
             print(f"[Job {job_id}] Overlay decoded: {len(overlay_bytes)} bytes")
-            
+
             # Composite the overlay on the generated image
             custom_image = overlay_subscriber_image(base_image, overlay_bytes)
             print(f"[Job {job_id}] Image composited: {custom_image.size}")
@@ -259,9 +265,9 @@ async def _process_subscriber_distribution(job_id: str, subscribers: list, holid
                 "error": str(e)
             })
             job["failed"] += 1
-        
+
         job["processed"] += 1
-    
+
     job["status"] = "completed"
     job["completed_at"] = datetime.now().isoformat()
     print(f"\n{'='*60}")
@@ -275,13 +281,16 @@ async def _process_subscriber_distribution(job_id: str, subscribers: list, holid
 async def distribute_to_single_subscriber(subscriber_id: str, background_tasks: BackgroundTasks):
     """
     Generate a holiday post and send it to a specific subscriber by ID.
-    
+
     Returns immediately with a job_id. Use /subscriber/distribution-status/{job_id} to check progress.
     """
-    # 1. Get Today's Holiday
-    holiday = parse_csv_for_today()
-    if not holiday:
+    # 1. Get Today's Holiday with description
+    holiday_data = await get_holiday_with_description_for_today()
+    if not holiday_data:
         return {"status": "error", "message": "No holiday found for today"}
+
+    holiday = holiday_data.get("prompt")
+    holiday_description = holiday_data.get("description")
 
     # 2. Get the specific subscriber
     subscriber = await SubscriberRepository.get_by_id(subscriber_id)
@@ -292,7 +301,7 @@ async def distribute_to_single_subscriber(subscriber_id: str, background_tasks: 
     from bson import ObjectId
     from database import get_subscribers_collection
     raw_subscriber = await get_subscribers_collection().find_one({"_id": ObjectId(subscriber_id)})
-    
+
     if not raw_subscriber:
         raise HTTPException(status_code=404, detail="Subscriber not found")
 
@@ -314,7 +323,8 @@ async def distribute_to_single_subscriber(subscriber_id: str, background_tasks: 
         _process_subscriber_distribution,
         job_id,
         [raw_subscriber],
-        holiday
+        holiday,
+        holiday_description
     )
 
     return {
@@ -333,5 +343,5 @@ async def get_subscriber_distribution_status(job_id: str):
     """
     if job_id not in subscriber_distribution_jobs:
         raise HTTPException(status_code=404, detail="Job not found")
-    
+
     return subscriber_distribution_jobs[job_id]
