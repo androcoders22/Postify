@@ -1,5 +1,8 @@
 .venv
 .env
-venv 
+venv
 __pycache__
 .ruff_cache
+
+# Playwright persistent browser profile (contains login sessions)
+playwright_scripts/browser_profile/

@@ -16,11 +16,12 @@ from services import (
     get_holiday_for_today,
     get_holiday_with_description_for_today,
     generate_structured_output,
-    generate_image,
+    # generate_image,  # Deprecated: Now using Playwright
     overlay_subscriber_image,
     image_to_base64,
     send_to_whatsapp,
 )
+from services.playwright_image_service import generate_image_playwright
 
 router = APIRouter(prefix="/subscriber", tags=["Subscribers"])
 
@@ -196,7 +197,7 @@ async def _process_subscriber_distribution(job_id: str, subscribers: list, holid
         caption = structured_output.get("caption", "")
 
         print(f"[Job {job_id}] Caption: {caption}")
-        print(f"[Job {job_id}] Prompt: {image_prompt[:20]}...")
+        print(f"[Job {job_id}] Prompt: {image_prompt[:100]}...")
 
         if not image_prompt:
             job["status"] = "failed"
@@ -204,8 +205,8 @@ async def _process_subscriber_distribution(job_id: str, subscribers: list, holid
             print(f"[Job {job_id}] ERROR: Failed to generate image prompt")
             return
 
-        print(f"[Job {job_id}] Generating base image...")
-        base_image = generate_image(image_prompt)
+        print(f"[Job {job_id}] Generating base image via Playwright...")
+        base_image = generate_image_playwright(image_prompt)
         print(f"[Job {job_id}] Base image generated successfully: {base_image.size}")
     except Exception as e:
         job["status"] = "failed"
@@ -384,9 +385,9 @@ async def send_festival_to_subscriber(request: SendFestivalRequest):
         if not image_prompt:
             raise HTTPException(status_code=500, detail="Failed to generate image prompt")
 
-        # 5. Generate Image
-        print(f"Generating image with prompt: {image_prompt[:50]}...")
-        base_image = generate_image(image_prompt)
+        # 5. Generate Image via Playwright
+        print(f"Generating image via Playwright with prompt: {image_prompt[:50]}...")
+        base_image = generate_image_playwright(image_prompt)
 
         # 6. Apply Overlay
         overlay_base64 = raw_subscriber.get("overlay", "")

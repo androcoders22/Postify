@@ -5,7 +5,15 @@ A minimal FastAPI application entry point that wires up all modules.
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import health_router, users_router, posts_router, subscribers_router, holidays_router
+from routes import (
+    health_router,
+    # users_router,  # Deprecated: Using subscribers now
+    posts_router,
+    subscribers_router,
+    holidays_router,
+    playwright_posts_router,
+    test_post_router,
+)
 
 # Create FastAPI app
 app = FastAPI(
@@ -24,10 +32,12 @@ app.add_middleware(
 
 # Include routers
 app.include_router(health_router)
-app.include_router(users_router)
+# app.include_router(users_router)  # Deprecated: Using subscribers now
 app.include_router(posts_router)
 app.include_router(subscribers_router)
 app.include_router(holidays_router)
+app.include_router(playwright_posts_router)
+app.include_router(test_post_router)
 
 
 if __name__ == "__main__":
