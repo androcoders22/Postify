@@ -14,7 +14,6 @@ from config import DEFAULT_PHONE_NUMBER
 from models import GeneratePostResponse
 from database import UserRepository
 from services import (
-    get_holiday_for_today,
     get_holiday_with_description_for_today,
     generate_structured_output,
     overlay_images,

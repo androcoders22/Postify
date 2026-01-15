@@ -2,8 +2,8 @@ name: Daily Post Generator
 
 on:
   schedule:
-    - cron: '35 18 * * *'  # Runs daily at 00:05 IST (18:35 UTC)
-  workflow_dispatch:      # Allows manual triggering for testing
+    - cron: "30 6 * * *" # Runs daily at 12:00 PM IST (06:30 UTC)
+  workflow_dispatch:
 
 jobs:
   generate-post:

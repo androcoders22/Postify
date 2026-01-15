@@ -13,7 +13,6 @@ from config import MONGO_URI
 from database import SubscriberRepository, HolidayRepository
 from models.schemas import SendFestivalRequest
 from services import (
-    get_holiday_for_today,
     get_holiday_with_description_for_today,
     generate_structured_output,
     # generate_image,  # Deprecated: Now using Playwright
