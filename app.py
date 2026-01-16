@@ -11,7 +11,6 @@ from routes import (
     posts_router,
     subscribers_router,
     holidays_router,
-    playwright_posts_router,
     test_post_router,
 )
 
@@ -36,7 +35,6 @@ app.include_router(health_router)
 app.include_router(posts_router)
 app.include_router(subscribers_router)
 app.include_router(holidays_router)
-app.include_router(playwright_posts_router)
 app.include_router(test_post_router)
 
 

@@ -15,11 +15,11 @@ from database import SubscriberRepository
 from services import (
     get_holiday_with_description_for_today,
     generate_structured_output,
+    generate_image,
     overlay_subscriber_image,
     image_to_base64,
     send_to_whatsapp,
 )
-from services.playwright_image_service import generate_image_playwright
 
 router = APIRouter(prefix="/test", tags=["Test"])
 
@@ -35,7 +35,7 @@ async def generate_post_by_subscriber(
     1. Fetch today's holiday from DB
     2. Get subscriber details by ID
     3. Generate AI prompt
-    4. Generate image via Playwright
+    4. Generate image via Gemini
     5. Apply overlay with subscriber's custom overlay
     6. Send to subscriber's WhatsApp
     """
@@ -98,18 +98,18 @@ async def generate_post_by_subscriber(
     print(f"[TEST] Generated image prompt (first 100 chars): {image_prompt[:100]}...")
     print(f"[TEST] Generated caption: {caption}")
 
-    # Step 4: Generate image using Playwright
-    print(f"\n[TEST] Step 4: Generating image via Playwright...")
-    print(f"[TEST] Sending prompt to Playwright script...")
+    # Step 4: Generate image using Gemini
+    print(f"\n[TEST] Step 4: Generating image via Gemini...")
+    print(f"[TEST] Sending prompt to Gemini...")
 
     try:
-        generated_image = generate_image_playwright(image_prompt)
+        generated_image = generate_image(image_prompt)
         print(f"[TEST]   Image generated successfully! Size: {generated_image.size}")
     except Exception as e:
-        print(f"[TEST]   Playwright image generation failed: {str(e)}")
+        print(f"[TEST]   Gemini image generation failed: {str(e)}")
         raise HTTPException(
             status_code=500,
-            detail=f"Playwright image generation failed: {str(e)}"
+            detail=f"Gemini image generation failed: {str(e)}"
         )
 
     # Step 5: Apply overlay with subscriber's custom overlay
@@ -149,7 +149,7 @@ async def generate_post_by_subscriber(
             success=True,
             holiday=holiday_prompt,
             caption=caption,
-            message=f"Post generated via Playwright and sent to {subscriber_phone} successfully!",
+            message=f"Post generated via Gemini and sent to {subscriber_phone} successfully!",
         )
     except Exception as e:
         print(f"[TEST] WhatsApp sending failed: {str(e)}")
